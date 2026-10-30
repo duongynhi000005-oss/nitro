@@ -124,13 +124,19 @@ export async function startPreview(opts: PreviewOptions): Promise<PreviewInstanc
   };
 }
 
-async function loadPreviewDotEnv(root: string): Promise<[string, string][]> {
+export async function loadPreviewDotEnv(root: string): Promise<[string, string][]> {
   const { loadDotenv } = await import("c12");
   const env = await loadDotenv({
     cwd: root,
     fileName: [".env.preview", ".env.production", ".env"],
   });
-  return Object.entries(env).filter(([_key, val]) => val) as [string, string][];
+  const entries = Object.entries(env).filter(([_key, val]) => val) as [string, string][];
+  for (const [key, val] of entries) {
+    if (!process.env[key]) {
+      process.env[key] = val;
+    }
+  }
+  return entries;
 }
 
 async function runPreviewCommand(opts: {
